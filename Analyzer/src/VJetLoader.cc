@@ -138,6 +138,18 @@ void VJetLoader::setupTree(TTree *iTree, std::string iJetLabel) {
   fLabels.push_back("pt_JESDown");
   fLabels.push_back("pt_JERUp");
   fLabels.push_back("pt_JERDown");
+  fLabels.push_back("e2_sdb05"); // Correlation function inputs beta=0.5 soft-dropped 
+  fLabels.push_back("e3_sdb05");
+  fLabels.push_back("e3_v1_sdb05");
+  fLabels.push_back("e3_v2_sdb05");
+  fLabels.push_back("e4_v1_sdb05");
+  fLabels.push_back("e4_v2_sdb05");
+  fLabels.push_back("e2_sdb4"); // Correlation function inputs beta=4 soft-dropped 
+  fLabels.push_back("e3_sdb4");
+  fLabels.push_back("e3_v1_sdb4");
+  fLabels.push_back("e3_v2_sdb4");
+  fLabels.push_back("e4_v1_sdb4");
+  fLabels.push_back("e4_v2_sdb4");
 
   std::stringstream pSNJ;   pSNJ << "n" << iJetLabel << "s";
   fTree = iTree;
@@ -518,6 +530,18 @@ void VJetLoader::fillVJet(int iN,std::vector<TJet*> &iObjects,std::vector<double
     iVals[lBase+i0*lNLabel+53] = jetPtJESDown;
     iVals[lBase+i0*lNLabel+54] = jetPtJERUp;
     iVals[lBase+i0*lNLabel+55] = jetPtJERDown;
+    iVals[lBase+i0*lNLabel+56] = pAddJet->e2_sdb05;
+    iVals[lBase+i0*lNLabel+57] = pAddJet->e3_sdb05;
+    iVals[lBase+i0*lNLabel+58] = pAddJet->e3_v1_sdb05;
+    iVals[lBase+i0*lNLabel+59] = pAddJet->e3_v2_sdb05;
+    iVals[lBase+i0*lNLabel+60] = pAddJet->e4_v1_sdb05;
+    iVals[lBase+i0*lNLabel+61] = pAddJet->e4_v2_sdb05;
+    iVals[lBase+i0*lNLabel+62] = pAddJet->e2_sdb4;
+    iVals[lBase+i0*lNLabel+63] = pAddJet->e3_sdb4;
+    iVals[lBase+i0*lNLabel+64] = pAddJet->e3_v1_sdb4;
+    iVals[lBase+i0*lNLabel+65] = pAddJet->e3_v2_sdb4;
+    iVals[lBase+i0*lNLabel+66] = pAddJet->e4_v1_sdb4;
+    iVals[lBase+i0*lNLabel+67] = pAddJet->e4_v2_sdb4;
 
     fpartonFlavor   = iObjects[0]->partonFlavor;
     fhadronFlavor   = iObjects[0]->hadronFlavor;
