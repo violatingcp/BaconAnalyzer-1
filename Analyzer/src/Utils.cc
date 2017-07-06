@@ -491,6 +491,16 @@ void setupNtuple(std::string iHeader,TTree *iTree,int iN,std::vector<float> &iVa
   }
 }
 //--------------------------------------------------------------------------------------------------
+void setupNtupleArr(TTree *iTree,std::vector<std::vector<float> > &iVals,std::vector<std::string> &iLabels) {
+  int lBase  = 0;
+  for(int i0 = 0; i0 < (int(iLabels.size())); i0++) {
+    std::stringstream pVal;
+    pVal  << iLabels[i0 % iLabels.size()];
+    iTree->Branch(pVal .str().c_str(),"vector<float>",&iVals[lBase]);
+    lBase++;
+  }
+}
+//--------------------------------------------------------------------------------------------------
 void setupNtupleVector(std::string iHeader,TTree *iTree,std::vector<double> &pt, std::vector<double> &eta, std::vector<double> &phi) {
   std::stringstream pSPt,pSEta,pSPhi;  
   pSPt  << iHeader << "_pt";

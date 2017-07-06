@@ -55,11 +55,9 @@ void GenLoader::load(int iEvent) {
   fGens     ->Clear();
   fGenBr    ->GetEntry(iEvent);
   fGenInfoBr->GetEntry(iEvent);
-
   fWeight = fGenInfo->weight;
 }
-bool GenLoader::isType(std::string boson,std::string mode)
-{
+bool GenLoader::isType(std::string boson,std::string mode){
   int iPDGID,iId;
   if (boson.find("Z")==0) iPDGID = 23;
   if (boson.find("W")==0) iPDGID = 24;
