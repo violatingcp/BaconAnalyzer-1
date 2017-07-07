@@ -182,9 +182,10 @@ int GenPartLoader::simplifiedPdg(int iPdgId) {
   return iPdgId;
 }
 float  GenPartLoader::phi(float iPhi0,float iPhi1) { 
-  if(fabs(iPhi0-iPhi1) > 2.*TMath::Pi()-fabs(iPhi0-iPhi1) && iPhi0-iPhi1 < 0) return 2.*TMath::Pi() -iPhi0+iPhi1; 
-  if(fabs(iPhi0-iPhi1) > 2.*TMath::Pi()-fabs(iPhi0-iPhi1) && iPhi0-iPhi1 > 0) return -2.*TMath::Pi()-iPhi0+iPhi1; 
-  return 0;
+  double pDPhi = iPhi0-iPhi1;
+  if(fabs(pDPhi) > 2.*TMath::Pi()-fabs(pDPhi) && pDPhi < 0) pDPhi =   2.*TMath::Pi()+pDPhi;
+  if(fabs(pDPhi) > 2.*TMath::Pi()-fabs(pDPhi) && pDPhi > 0) pDPhi =  -2.*TMath::Pi()+pDPhi;
+  return pDPhi;
 }
 //Debug Method
 void GenPartLoader::parentage(TGenParticle* iPart,TJet *iJet,std::vector<TGenParticle*> &iPartons) { 
