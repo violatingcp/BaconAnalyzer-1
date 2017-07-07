@@ -5,7 +5,7 @@
 
 using namespace baconhep;
 
-GenPartLoader::GenPartLoader(TTree *iTree) { 
+GenPartLoader::GenPartLoader(TTree *iTree,bool iHadrons) { 
   fGenInfo  = new TGenEventInfo();
   iTree->SetBranchAddress("GenEvtInfo",       &fGenInfo);
   fGenInfoBr  = iTree->GetBranch("GenEvtInfo");
@@ -17,7 +17,9 @@ GenPartLoader::GenPartLoader(TTree *iTree) {
   fDRHeavy = 0.5;
   //  fGenVtx   = new TClonesArray("baconhep::TGenVtx");
   //  iTree->SetBranchAddress("GenVtx",       &fGenVtx);
-  // fGenVtxBr = iTree->GetBranch("GenVtx");
+  //  fGenVtxBr = iTree->GetBranch("GenVtx");
+  if(iHadrons)  fPartons = {1, 2, 3, 4, 5, 21,15,11,12,111,211,221,113,213,130,310,311,321,411,421,433,441,443,511,521,513,523,531,541};
+  if(!iHadrons) fPartons = {1, 2, 3, 4, 5, 21,15,11,12};
 }
 GenPartLoader::~GenPartLoader() { 
   delete fGenInfo;
@@ -59,7 +61,7 @@ void GenPartLoader::setupTree(TTree *iTree,float iXSIn,float iRadius) {
     fVars.push_back(lVars); 
   }
  setupNtupleArr(iTree,fVars,fLabels);
-  fXS = iXSIn;
+ fXS = iXSIn;
 }
 void GenPartLoader::load(int iEvent) { 
   fGens     ->Clear();
@@ -76,8 +78,7 @@ void GenPartLoader::chain(TJet *iJet, float iZCut) {
   fVars[2].push_back(iJet->geneta);
   fVars[3].push_back(iJet->genphi);
   fVars[4].push_back(iJet->genm);
-  //const std::unordered_set<unsigned> partonIDs = {1, 2, 3, 4, 5, 21,15,11,12,411,421,433,441,443,511,521,513,523,531,541};
-  const std::unordered_set<unsigned> partonIDs = {1, 2, 3, 4, 5,11,13,15,21};
+  const std::unordered_set<unsigned> partonIDs = fPartons;
   auto validPID = [partonIDs](int id) -> bool {
     return (partonIDs.find(abs(id)) != partonIDs.end());
   };
@@ -187,8 +188,7 @@ float  GenPartLoader::phi(float iPhi0,float iPhi1) {
 }
 //Debug Method
 void GenPartLoader::parentage(TGenParticle* iPart,TJet *iJet,std::vector<TGenParticle*> &iPartons) { 
-  //const std::unordered_set<unsigned> partonIDs = {1, 2, 3, 4, 5, 21,15,11,12,411,421,433,441,443,511,521,513,523,531,541};
-  const std::unordered_set<unsigned> partonIDs = {1, 2, 3, 4, 5, 21,15,11,12};
+  const std::unordered_set<unsigned> partonIDs = fPartons;
   auto validPID = [partonIDs](int id) -> bool {
     return (partonIDs.find(abs(id)) != partonIDs.end());
   };

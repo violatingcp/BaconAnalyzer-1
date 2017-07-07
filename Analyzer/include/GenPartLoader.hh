@@ -12,7 +12,7 @@ using namespace baconhep;
 
 class GenPartLoader { 
 public:
-  GenPartLoader(TTree *iTree);
+  GenPartLoader(TTree *iTree,bool iHadrons=false);
   ~GenPartLoader();
   void reset();
   void setupTree(TTree *iTree,float iXSIn,float iRadius);
@@ -38,7 +38,8 @@ public:
   float fWeight;
   std::vector<std::string> fLabels;
   std::vector<std::vector<float> > fVars;
-  
+  std::unordered_set<unsigned> fPartons;
+
 protected: 
   TTree         *fTree;
   int fPartonBase;
