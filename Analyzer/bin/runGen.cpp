@@ -76,15 +76,16 @@ int main( int argc, char **argv ) {
     fGenJet->selectVJets(pGenJets);
     // Check GenInfo
     float lWeight = 1;
+    NEvents->SetBinContent(1, NEvents->GetBinContent(1)+lWeight);
     if(pGenJets.size() == 0) continue;
     fGen->load(i0);
+    if(fGen->leptonVeto()) continue;
     for(unsigned int i1 = 0; i1 < pGenJets.size(); i1++) {  
       fGen->chain(pGenJets[i1],0.1); //zcut 0.1
       lWeight = fGen->fWeight;
       lOut->Fill();
     }
-    NEvents->SetBinContent(1, NEvents->GetBinContent(1)+lWeight);
-  }
+   }
   std::cout << lTree->GetEntriesFast() << std::endl;
   lFile->cd();
   lOut->Write();  

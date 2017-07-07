@@ -77,7 +77,7 @@ void GenPartLoader::chain(TJet *iJet, float iZCut) {
   fVars[3].push_back(iJet->genphi);
   fVars[4].push_back(iJet->genm);
   //const std::unordered_set<unsigned> partonIDs = {1, 2, 3, 4, 5, 21,15,11,12,411,421,433,441,443,511,521,513,523,531,541};
-  const std::unordered_set<unsigned> partonIDs = {1, 2, 3, 4, 5, 21,15,11,12};
+  const std::unordered_set<unsigned> partonIDs = {1, 2, 3, 4, 5,11,13,15,21};
   auto validPID = [partonIDs](int id) -> bool {
     return (partonIDs.find(abs(id)) != partonIDs.end());
   };
@@ -88,49 +88,45 @@ void GenPartLoader::chain(TJet *iJet, float iZCut) {
   };
   std::vector<TGenParticle*> lParton;
   std::vector<TGenParticle*> lChildren;
-  //std::cout <<" ====> Gen " << std::endl;
   for(int i0 = 0; i0 < fGens->GetEntriesFast(); i0++) { 
     TGenParticle *pGen = (TGenParticle*)((*fGens)[i0]);
-    //std::cout <<" ====> -id- " << i0 << " -pdgid- " << pGen->pdgId << " -- " << pGen->pt  << " -- " << pGen->eta << " -- " << pGen->phi <<  " -- " << pGen->parent << std::endl;
     if(!validPID(int(pGen->pdgId))) continue;        // Skip the intermediate stuff
     if(pGen->pt < iJet->genpt*iZCut) continue; 
     lChildren.clear();
     for(int i1 = 0; i1 < fGens->GetEntriesFast(); i1++) { 
       TGenParticle *pGen1 = (TGenParticle*)((*fGens)[i1]);
-      if (parentid(pGen1) != i0 || !validPID(int(pGen1->pdgId)) || isResonance(pGen1->pdgId)) continue;
+      //if (parentid(pGen1) != i0 || !validPID(int(pGen1->pdgId)) || isResonance(pGen1->pdgId)) continue;
+      if (parentid(pGen1) != i0) continue;
       lChildren.push_back(pGen1);
     }
     int pPass = 0; 
-    for(unsigned int i1 = 0; i1 < lChildren.size(); i1++) if(lChildren[i1]->pt > iJet->genpt*iZCut) pPass++; 
-    //if(pPass > 1) continue; //!!!!!!!!
+    for(unsigned int i1 = 0; i1 < lChildren.size(); i1++) if(lChildren[i1]->pt > iJet->genpt*iZCut  && validPID(int(lChildren[i1]->pdgId)) && !isResonance(lChildren[i1]->pdgId) ) pPass++; 
+    if(pPass > 1 && pPass == int(lChildren.size()) ) continue; //!!!!!!!! 2nd Left is to account for N daughters > 2 where one daughter fails condition and thus we lose assignment or in the case wherethe parton starts going to Hadrons in which case we would lose the leg
     bool pFoundParent      = false;
     bool pFoundResonance  = false;
     TGenParticle *iter = pGen;
     int pParent = parentid(iter);
     while(pParent > 1) { 
       iter = (TGenParticle*)((*fGens)[pParent]);
-      if (pFoundResonance) pFoundResonance = isResonance(iter->pdgId); //I really don't understand this but it won't hurt
+      //if (pFoundResonance) pFoundResonance = isResonance(iter->pdgId); //I really don't understand this so I commented it out
       if (find(lParton,iter) != -1) {pFoundParent = true; break;}
       pParent = parentid(iter);
     }
     if(pFoundParent && !pFoundResonance) continue;
-    //TGenParticle *pParent =  (TGenParticle*)((*fGens)[pGen->parent]);
-    //std::cout << " Parton Adding ==> " << lParton.size() << " --- > " << pGen->pt << " -- " << pGen->pdgId << " ====> " << pParent->pdgId << " -- " << pParent->eta << " -- " << pParent->phi << " ---> " << deltaR(pParent->phi,pParent->eta,iJet->genphi,iJet->geneta)  << std::endl;
     lParton.push_back(pGen);
     pParent = parentid(iter);
   }
-  std::cout <<" ====> Gen end" << std::endl;
   int lBase=fPartonBase;
-  std::cout <<" ===> Partons " << lParton.size() << std::endl;
+  //std::cout <<" ===> Partons " << lParton.size() << std::endl;
   for(unsigned int i0 = 0; i0 < lParton.size(); i0++) { 
     fVars[lBase+0].push_back(lParton[i0]->pt);
     fVars[lBase+1].push_back(lParton[i0]->eta-iJet->geneta);
     fVars[lBase+2].push_back(phi(lParton[i0]->phi,iJet->genphi));
     fVars[lBase+3].push_back(lParton[i0]->mass);
     fVars[lBase+4].push_back(float(lParton[i0]->pdgId));
-    std::cout <<" ===> Parton " << i0 << " -id- " << lParton[i0]->pdgId << " - " << lParton[i0]->pt << " -dR- " << deltaR(lParton[i0]->phi,lParton[i0]->eta,iJet->genphi,iJet->geneta) << std::endl;
+    //std::cout <<" ===> Parton " << i0 << " -id- " << lParton[i0]->pdgId << " - " << lParton[i0]->pt << " -dR- " << deltaR(lParton[i0]->phi,lParton[i0]->eta,iJet->genphi,iJet->geneta) << " === " << lParton[i0]->status << std::endl;
   }
-  std::cout << " ===> End Partons " << std::endl;
+  //std::cout << " ===> End Partons " << std::endl;
   lChildren.clear();
   for(int i0 = 0; i0 < fGens->GetEntriesFast(); i0++) { 
     TGenParticle *pGen = (TGenParticle*)((*fGens)[i0]);
@@ -138,12 +134,7 @@ void GenPartLoader::chain(TJet *iJet, float iZCut) {
     if(deltaR(pGen->phi,pGen->y,iJet->genphi,iJet->geneta) > fRadius) continue; 
     if(pGen->pt     < 0.2) continue;
     lChildren.push_back(pGen);
-    //    fPdgIds.push_back(simplifiedPdg(pGen->pdgId));
   }
-
-  //std::sort(fPdgIds.begin(), fPdgIds.end());
-  //auto last = std::unique(fPdgIds.begin(), fPdgIds.end());
-  //fPdgIds.erase(last, fPdgIds.end()); 
   lBase=fParticleBase;
   for(unsigned int i0 = 0; i0 < lChildren.size(); i0++) { 
     fVars[lBase+0].push_back(lChildren[i0]->pt);
@@ -152,7 +143,8 @@ void GenPartLoader::chain(TJet *iJet, float iZCut) {
     fVars[lBase+3].push_back(float(simplifiedPdg(lChildren[i0]->pdgId)));
     fVars[lBase+4].push_back(float(lChildren[i0]->d0));
     fVars[lBase+5].push_back(float(mother(lChildren[i0],lParton)));
-    if(mother(lChildren[i0],lParton) == -1 && parentid(lChildren[i0]) >  1) parentage(lChildren[i0],iJet,lParton);
+    //if(mother(lChildren[i0],lParton) == -1 && parentid(lChildren[i0]) >  1) parentage(lChildren[i0],iJet,lParton);
+    //if(mother(lChildren[i0],lParton) == -1) parentage(lChildren[i0],iJet,lParton);
   }
 }
 float GenPartLoader::deltaR(float iPhi0,float iEta0,float iPhi1,float iEta1) { 
@@ -162,6 +154,8 @@ float GenPartLoader::deltaR(float iPhi0,float iEta0,float iPhi1,float iEta1) {
 }
 float GenPartLoader::mother(TGenParticle* iPart, std::vector<TGenParticle*> &iPartons) { 
   int iId = -1;
+  iId = find(iPartons,iPart);
+  if(iId > -1) return float(iId); 
   int lParentId = parentid(iPart);
   TGenParticle *pParent =  (TGenParticle*)((*fGens)[lParentId]);
   while(find(iPartons,pParent) == -1 && lParentId > 1) {pParent =  (TGenParticle*)((*fGens)[lParentId]); lParentId = parentid(pParent);}
@@ -200,9 +194,9 @@ void GenPartLoader::parentage(TGenParticle* iPart,TJet *iJet,std::vector<TGenPar
   };
   const std::unordered_set<unsigned> resonanceIDs = {6, 23, 24, 25, 54, 55}; 
   auto isResonance = [resonanceIDs](int id) -> bool {
-    return ( (resonanceIDs.find(abs(id)) != resonanceIDs.end()) );
-    //return ( (abs(id) > 10000) || // e.g. Z'
-    //         (resonanceIDs.find(abs(id)) != resonanceIDs.end()) );
+    //return ( (resonanceIDs.find(abs(id)) != resonanceIDs.end()) );
+    return ( (abs(id) > 10000) || // e.g. Z'
+	     (resonanceIDs.find(abs(id)) != resonanceIDs.end()) );
   };
   const std::unordered_set<unsigned> bIDs = {511,513,521,523,531,533,541,543,5122,5112,5114,5132,5212,5212,5222,5214,5224,5232,5332,5142};
   const std::unordered_set<unsigned> cIDs = {411,413,421,423,431,433,441,443,4122,4112,5114,4132,4212,4212,4222,4214,4224,4232,4332,4142,20433};
@@ -218,28 +212,35 @@ void GenPartLoader::parentage(TGenParticle* iPart,TJet *iJet,std::vector<TGenPar
   bool lFromRes = false;
   //bool lFromUE    = true;
   bool lPassPtCut = false;
-  bool lNoHF      = true;
+  //bool lNoHF      = true;
   while(lParentId > 1) {
     //if(isResonance(pParent->pdgId)) lFromUE = false;
     double pZ     = pParent->pt/iJet->genpt;
     if(pZ > 0.1 && validPID(pParent->pdgId) && !lFromRes) lPassPtCut = true;
     if(isResonance(pParent->pdgId) && !lPassPtCut) lFromRes = true;
     pParent =  (TGenParticle*)((*fGens)[lParentId]);
-    if(pZ > 0.1 && (isC(pParent->pdgId) || isB(pParent->pdgId)) ) lNoHF = false;
+    //if(pZ > 0.1 && (isC(pParent->pdgId) || isB(pParent->pdgId)) ) lNoHF = false;
     lParentId = parentid(pParent); 
     lNCount++; 
   }
-  if(lFromRes || lNoHF) return;
+  //if(lFromRes || !lNoHF) return;
+  //if(!lPassPtCut) return;
+  if(iPart->pt > 100) { 
+    for(int i0 = 0; i0 < TMath::Max(fGens->GetEntriesFast(),50); i0++) {   
+      TGenParticle *pGen = (TGenParticle*)((*fGens)[i0]);
+      if(pGen == iPart) break;
+      std::cout <<" Scanning ====> -id- " << i0  << " -pdgid- " << pGen->pdgId << " -pt- " << pGen->pt  << " -eta- " << pGen->eta << " -phi- " << pGen->phi <<  " -parent- " << pGen->parent << " -dr- " << deltaR(pGen->phi,pGen->y,iPart->phi,iPart->y) << std::endl;
+    }
+  }
   lParentId = parentid(iPart); 
   pParent =  (TGenParticle*)((*fGens)[lParentId]);
-  std::cout << "===> Missing Parent -parent- " << iPart->parent << " -id- " << iPart->pdgId << " -pt- " << iPart->pt  << " -- " << lNCount << " -- " << lFromRes << std::endl; 
+  if(iPart->pt > 100) std::cout << "===> Missing Parent -parent- " << iPart->parent << " -id- " << iPart->pdgId << " -pt- " << iPart->pt  << " -- " << lNCount << " -- " << lFromRes << " -- " << lPassPtCut << std::endl; 
   while(lParentId > 1) {
     pParent =  (TGenParticle*)((*fGens)[lParentId]);
-    std::cout <<" ====> Searching Parent " << lParentId << " -id- " << pParent->pdgId << " -pt- " << pParent->pt << " -eta- " << pParent->eta << " -phi- " << pParent->phi << " - jet " << iJet->geneta << " - " << iJet->genphi  << " -dr- " <<  deltaR(pParent->phi,pParent->y,iJet->genphi,iJet->geneta) << " -chec- " << find(iPartons,pParent) << std::endl;
-    lParentId = parentid(pParent,true); 
-    //printVtx(pParent,iJet); 
+    if(iPart->pt > 100) std::cout <<" ====> Searching Parent " << lParentId << " -id- " << pParent->pdgId << " -pt- " << pParent->pt << " -eta- " << pParent->eta << " -phi- " << pParent->phi << " - jet " << iJet->geneta << " - " << iJet->genphi  << " -dr- " <<  deltaR(pParent->phi,pParent->y,iJet->genphi,iJet->geneta) << " -chec- " << find(iPartons,pParent) << std::endl;
+    lParentId = parentid(pParent,false); 
   }
-  std::cout <<" ===> Done " << pParent->parent << std::endl;
+  if(iPart->pt > 100) std::cout <<" ===> Done " << pParent->parent << std::endl;
 }
 int GenPartLoader::parentid(TGenParticle *iPart,bool iOutput) { 
   const std::unordered_set<unsigned> bIDs = {511,513,521,523,531,533,541,543,5122,5112,5114,5132,5212,5212,5222,5214,5224,5232,5332,5142};
@@ -250,15 +251,29 @@ int GenPartLoader::parentid(TGenParticle *iPart,bool iOutput) {
   auto isC = [cIDs](int id) -> bool {
     return (cIDs.find(abs(id)) != cIDs.end());
   };
+  /*
+  if(iOutput) { 
+    for(int i0 = 0; i0 < TMath::Max(fGens->GetEntriesFast(),50); i0++) {   
+      TGenParticle *pGen = (TGenParticle*)((*fGens)[i0]);
+      //if(pGen == iPart) break;
+      std::cout <<" Scanning ====> -id- " << i0  << " -pdgid- " << pGen->pdgId << " -pt- " << pGen->pt  << " -eta- " << pGen->eta << " -phi- " << pGen->phi <<  " -parent- " << pGen->parent << " -dr- " << deltaR(pGen->phi,pGen->y,iPart->phi,iPart->y) << std::endl;
+    }
+  }
+  */
   int lId = iPart->parent;
-  if(iOutput) std::cout <<" ===> seraching " << iPart->pdgId  << " -parent- " << lId << std::endl;
-  if(lId > 1 && lId != -2 && !isB(iPart->pdgId) && !isC(iPart->pdgId)) return lId;
+  if(isC(iPart->pdgId) && lId > 1) { 
+    TGenParticle *pGen = (TGenParticle*)((*fGens)[lId]);
+    if((fabs(pGen->pdgId) < 10 && fabs(pGen->pdgId) > 3 && pGen->pt > 5) || fabs(pGen->pdgId) > 10) return lId;
+    lId = 0; 
+  }
   /*
   if(isB(iPart->pdgId) && lId > 1) { 
     TGenParticle *pGen = (TGenParticle*)((*fGens)[lId]);
-    if(fabs(pGen->pdgId) == 5) return lId;
-    }
+    if((fabs(pGen->pdgId) < 10 && fabs(pGen->pdgId) > 4) || fabs(pGen->pdgId) > 10) return lId;
+    lId = 0; 
+  }
   */
+  if(lId > 1 && lId != -2 && !isB(iPart->pdgId)) return lId;
   int lPdgId = 0;
   if(isC(iPart->pdgId)) lPdgId = 4;
   if(isB(iPart->pdgId)) lPdgId = 5;
@@ -266,13 +281,14 @@ int GenPartLoader::parentid(TGenParticle *iPart,bool iOutput) {
   lId = 0; 
   bool lUseCharge = true; if(abs(iPart->pdgId) > 1000) lUseCharge = false; // Ignore the charge for the baryons  b/c it is complicated
   int  lCharge    = 1;    if(lPdgId == 5) lCharge = -1; //Correct for the charge assignement of the mesons
+  if(iOutput) std::cout << "====> A " << std::endl;
   for(int i0 = 0; i0 < fGens->GetEntriesFast(); i0++) {   
     TGenParticle *pGen = (TGenParticle*)((*fGens)[i0]);
+    if(iOutput) std::cout <<" Scanning ====> -id- " << i0  << " -pdgid- " << pGen->pdgId << " -pt- " << pGen->pt  << " -eta- " << pGen->eta << " -phi- " << pGen->phi <<  " -parent- " << pGen->parent << " -dr- " << deltaR(pGen->phi,pGen->y,iPart->phi,iPart->y) << std::endl;
     if(pGen == iPart)  break;
-    if(abs(pGen->pdgId) != lPdgId || (int(iPart->pdgId/abs(iPart->pdgId)) != int(lCharge*(pGen->pdgId/abs(pGen->pdgId))) && lUseCharge) ) continue;
-    if(iOutput) std::cout <<" ====> -id- " << i0 << " -s- " << lPdgId << " -pdgid- " << pGen->pdgId << " -b- " << iPart->pdgId << " -- " << pGen->pt  << " -pt- " << iPart->pt << " -- " << pGen->eta << " -- " << pGen->phi <<  " -- " << pGen->parent << " -dr- " << deltaR(pGen->phi,pGen->y,iPart->phi,iPart->y) << std::endl;
-    if(deltaR(pGen->phi,pGen->y,iPart->phi,iPart->y) > fDRHeavy || pGen->pt < 0.7*iPart->pt) continue;
-    //std::cout <<" ======> pass " << deltaR(pGen->phi,pGen->y,iPart->phi,iPart->eta) << std::endl;
+    if(lPdgId != fabs(pGen->pdgId) || (int(iPart->pdgId/abs(iPart->pdgId)) != int(lCharge*(pGen->pdgId/abs(pGen->pdgId))) && lUseCharge)) continue;
+    if(deltaR(pGen->phi,pGen->y,iPart->phi,iPart->y) > fDRHeavy || pGen->pt < 0.3*iPart->pt) continue;
+    if(iOutput) std::cout <<"   Link ====> -id- " << i0 << " -s- " << lPdgId << " -pdgid- " << pGen->pdgId << " -b- " << iPart->pdgId << " -- " << pGen->pt  << " -pt- " << iPart->pt << " -- " << pGen->eta << " -- " << pGen->phi <<  " -- " << pGen->parent << " -dr- " << deltaR(pGen->phi,pGen->y,iPart->phi,iPart->y) << std::endl;
     lId = i0;
   }
   if(iOutput) std::cout <<" ===> seraching done " << lId << std::endl;
@@ -285,4 +301,14 @@ void GenPartLoader::printVtx(TGenParticle* iPart,TJet *iJet) {
     if(pGen->vtxId == iPart->vtxId) std::cout << " ----> " << i0 << " -- id -- " << pGen->pdgId << " -- " << pGen->pt << " -dr- " <<  deltaR(pGen->phi,pGen->y,iJet->genphi,iJet->geneta)  << " -vtxflav- " << pGen->vtxFlav << std::endl;
   }
   std::cout << " ===> Vtx end " << std::endl;
+}
+bool GenPartLoader::leptonVeto() { 
+  for(int i0 = 0; i0 < fGens->GetEntriesFast(); i0++) {   
+    TGenParticle *pGen = (TGenParticle*)((*fGens)[i0]);
+    if(fabs(pGen->pdgId) != 11 && fabs(pGen->pdgId) != 13) continue;
+    if(pGen->pt < 15) continue;
+    TGenParticle *pParent = (TGenParticle*)((*fGens)[pGen->parent]);
+    if(fabs(pParent->pdgId) == 24 || fabs(pParent->pdgId) == 23) return true;
+  }
+  return false;
 }

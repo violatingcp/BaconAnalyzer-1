@@ -443,12 +443,11 @@ bool passTauSel(const baconhep::TTau *tau)
 //--------------------------------------------------------------------------------------------------
 bool passVeto(double iEta,double iPhi,double idR, std::vector<TLorentzVector> &iVetoes) { 
   bool pMatch = false;
-  double idR2 = idR * idR;
   for(unsigned int i1 = 0; i1 < iVetoes.size(); i1++) { 
     double pDEta = iEta - iVetoes[i1].Eta();
     double pDPhi = iPhi - iVetoes[i1].Phi();
     if(fabs(pDPhi) > 2.*TMath::Pi()-fabs(pDPhi)) pDPhi =  2.*TMath::Pi()-fabs(pDPhi);
-    if(pDPhi*pDPhi+pDEta*pDEta > idR2) continue;
+    if(sqrt(pDPhi*pDPhi+pDEta*pDEta) > idR) continue;
     if(iVetoes[i1].Pt() < 0) continue;
     pMatch = true;
   }
@@ -495,6 +494,16 @@ void setupNtuple(std::string iHeader,TTree *iTree,int iN,std::vector<float> &iVa
     pVal  << iHeader << lCount  << "_" << iLabels[i0 % iLabels.size()];
     iTree->Branch(pVal .str().c_str(),&iVals[lBase],(pVal .str()+"/F").c_str());
     if(i0 % int(iLabels.size()) == 0 && i0 > 0) lCount++;
+    lBase++;
+  }
+}
+//--------------------------------------------------------------------------------------------------
+void setupNtupleArr(TTree *iTree,std::vector<std::vector<float> > &iVals,std::vector<std::string> &iLabels) {
+  int lBase  = 0;
+  for(int i0 = 0; i0 < (int(iLabels.size())); i0++) {
+    std::stringstream pVal;
+    pVal  << iLabels[i0 % iLabels.size()];
+    iTree->Branch(pVal .str().c_str(),"vector<float>",&iVals[lBase]);
     lBase++;
   }
 }

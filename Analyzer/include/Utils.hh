@@ -45,6 +45,7 @@ double deltaR2                (double iEta, double iPhi, double jEta, double jPh
 void   setupNtuple            (std::string iHeader,TTree *iTree,int iN,std::vector<double> &iVals);
 void   setupNtuple            (std::string iHeader,TTree *iTree,int iN,std::vector<double> &iVals,int iHead,std::vector<std::string> &iLabels);
 void   setupNtuple            (std::string iHeader,TTree *iTree,int iN,std::vector<float> &iVals,std::vector<std::string> &iLabels);
+void   setupNtupleArr         (TTree *iTree,std::vector<std::vector<float> > &iVals,std::vector<std::string> &iLabels);
 void   setupNtupleVector      (std::string iHeader,TTree *iTree,std::vector<double> &pt, std::vector<double> &eta, std::vector<double> &phi);
 void   setupNtupleVector      (std::string iHeader,TTree *iTree,std::vector< std::vector<double> > &iValVectors,std::vector<std::string> &iLabels);
 void   setupNtupleVector      (std::string iHeader,TTree *iTree,std::vector< std::vector<float> > &iValVectors,std::vector<std::string> &iLabels);

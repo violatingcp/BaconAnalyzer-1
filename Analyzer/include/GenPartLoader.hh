@@ -24,7 +24,8 @@ public:
   bool isNeutrino(int iPdgId);
   float  phi(float iPhi0,float iPhi1);
   int  simplifiedPdg(int iPdgId);
-  int parentid(TGenParticle *iPart,bool iOutput=false);
+  int  parentid(TGenParticle *iPart,bool iOutput=false);
+  bool leptonVeto();
   //Debug
   void parentage(TGenParticle* iPart,TJet *iJet,std::vector<TGenParticle*> &iPartons);
   void printVtx(TGenParticle* iPart,TJet *iJet);  
