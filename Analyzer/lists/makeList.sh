@@ -4,7 +4,7 @@
 function print_to_file {
     local printdir=$1
     local writefile=$2
-    find ../eos/cms/$printdir -maxdepth 1 -type f -name "*.root" >> $writefile
+    find /eos/cms/$printdir -maxdepth 1 -type f -name "*.root" >> $writefile
 }
 
 function scan {

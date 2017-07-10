@@ -12,7 +12,7 @@ using namespace baconhep;
 
 class GenPartLoader { 
 public:
-  GenPartLoader(TTree *iTree,bool iHadrons=false);
+  GenPartLoader(TTree *iTree,bool iHadrons=true);
   ~GenPartLoader();
   void reset();
   void setupTree(TTree *iTree,float iXSIn,float iRadius);

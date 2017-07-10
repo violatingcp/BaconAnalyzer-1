@@ -1,0 +1,3 @@
+/eos/cms//store/cmst3/group/monojet/production/13/RSGravToWW_width0p3_M_4000_13TeV_madgraph_pythia8/RSGravToWW_width0p3_M-4000_TuneCUETP8M1_13TeV-madgraph-pythia8/CRAB3/170707_190815/0000/Output_3.root
+/eos/cms//store/cmst3/group/monojet/production/13/RSGravToWW_width0p3_M_4000_13TeV_madgraph_pythia8/RSGravToWW_width0p3_M-4000_TuneCUETP8M1_13TeV-madgraph-pythia8/CRAB3/170707_190815/0000/Output_4.root
+/eos/cms//store/cmst3/group/monojet/production/13/RSGravToWW_width0p3_M_4000_13TeV_madgraph_pythia8/RSGravToWW_width0p3_M-4000_TuneCUETP8M1_13TeV-madgraph-pythia8/CRAB3/170707_190815/0000/Output_5.root

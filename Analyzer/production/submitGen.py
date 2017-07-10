@@ -90,7 +90,7 @@ if __name__ == '__main__':
     parser.add_option('-s','--sample',dest="sample", default="All",
                       #choices=['All','Hbb','QCD','JetHT','SingleMuon','DMSpin0','TT','DY','W','Diboson','Triboson','SingleTop','VectorDiJet1Jet','VectorDiJet1Gamma','MC','Data'],
                       help="samples to produces")
-    parser.add_option('-t','--tag',dest="tag", default = "qbertbits-v13-gen", help = "tag, which is the same as folder") 
+    parser.add_option('-t','--tag',dest="tag", default = "qbertbits-v13-genhadron", help = "tag, which is the same as folder") 
     parser.add_option("--njobs-per-file",dest="njobs_per_file",type='int',default=1,help="Split into n jobs per file, will automatically produce submission scripts")
     
     (options,args) = parser.parse_args()
